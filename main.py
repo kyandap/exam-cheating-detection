@@ -9,14 +9,10 @@ from eye_gaze import EyeGazeDetector
 from cheat_detector import CheatDetector
 from utils import draw_status, draw_top_bar
 
-# =====================
 # SETUP PATH
-# =====================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# =====================
 # SAVE EVIDENCE
-# =====================
 def save_cheating_evidence(frame, reason, count):
     evidence_dir = os.path.join(BASE_DIR, "evidence", "cheating")
     os.makedirs(evidence_dir, exist_ok=True)
@@ -42,9 +38,7 @@ def save_cheating_evidence(frame, reason, count):
 
     cv2.imwrite(path, img)
 
-# =====================
 # SOUND
-# =====================
 pygame.mixer.init()
 sound_path = os.path.join(BASE_DIR, "sounds", "warning.wav")
 warning_sound = pygame.mixer.Sound(sound_path)
@@ -52,9 +46,7 @@ warning_sound = pygame.mixer.Sound(sound_path)
 def warning_beep():
     warning_sound.play()
 
-# =====================
 # CAMERA & MODELS
-# =====================
 cap = cv2.VideoCapture(0)
 if not cap.isOpened():
     exit()
@@ -64,16 +56,12 @@ pose_estimator = HeadPoseEstimator()
 eye_gaze = EyeGazeDetector()
 cheat_detector = CheatDetector()
 
-# =====================
 # STATE VARIABLES
-# =====================
 last_warning_count = 0
 cheat_start_time = None
 CHEAT_DELAY = 2.0  # detik sebelum cheating dianggap valid
 
-# =====================
 # MAIN LOOP
-# =====================
 while True:
     ret, frame = cap.read()
     if not ret:
@@ -96,10 +84,8 @@ while True:
         raw_cheating, reason, count = cheat_detector.check(
             yaw, pitch, len(faces), x_ratio, y_ratio
         )
-
-        # =====================
+        
         # CHEAT DELAY LOGIC
-        # =====================
         cheating = False
         if raw_cheating:
             if cheat_start_time is None:
@@ -109,26 +95,20 @@ while True:
         else:
             cheat_start_time = None
 
-        # =====================
         # TOP STATUS BAR
-        # =====================
         if cheating:
             draw_top_bar(frame, "STATUS: CHEATING DETECTED", (0, 0, 255))
         else:
             draw_top_bar(frame, "STATUS: MONITORING", (0, 255, 0))
 
-        # =====================
         # HIGHLIGHT AREA
-        # =====================
         if cheating:
             if "EYE" in reason:
                 cv2.rectangle(frame, (200, 180), (440, 300), (0, 0, 255), 2)
             elif "HEAD" in reason:
                 cv2.rectangle(frame, (180, 120), (460, 360), (0, 0, 255), 2)
 
-        # =====================
         # EXAM STATUS
-        # =====================
         if count >= 5:
             exam_status = "EXAM FLAGGED"
             exam_color = (0, 0, 255)
